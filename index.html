@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-
 <title>التحقق من الوثيقة</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
@@ -21,55 +19,54 @@ font-family:'Cairo',sans-serif;
 }
 
 body{
-background:#f3f5f7;
+background:#f4f6f9;
 direction:rtl;
 }
 
-.creator{
+.creator,
+.viewer{
 display:flex;
 justify-content:center;
-align-items:center;
-padding:40px 15px;
-min-height:100vh;
+padding:35px 15px;
 }
 
-.form-box{
+.box{
 width:100%;
-max-width:700px;
+max-width:760px;
 background:#fff;
-padding:30px;
 border-radius:15px;
-box-shadow:0 5px 25px rgba(0,0,0,.08);
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+padding:30px;
 }
 
-.form-box h2{
+h2{
 text-align:center;
 margin-bottom:25px;
 }
 
-.form-box input{
+input{
 width:100%;
 padding:14px;
-margin-bottom:15px;
+font-size:18px;
 border:1px solid #ddd;
 border-radius:8px;
-font-size:18px;
+margin-bottom:15px;
 }
 
-.form-box button{
+button{
 width:100%;
 padding:15px;
-background:#4c8ee8;
-color:#fff;
+font-size:18px;
+background:#1976d2;
+color:white;
 border:none;
 border-radius:8px;
-font-size:18px;
 cursor:pointer;
 margin-top:10px;
 }
 
 #resultLink{
-background:#f7f7f7;
+background:#f5f5f5;
 }
 
 #qrcode{
@@ -78,38 +75,13 @@ justify-content:center;
 margin-top:20px;
 }
 
-.container{
+.viewer{
 display:none;
-justify-content:center;
-padding:30px 15px;
-}
-
-.card{
-width:100%;
-max-width:760px;
-background:#fff;
-border-radius:14px;
-overflow:hidden;
-box-shadow:0 5px 25px rgba(0,0,0,.08);
-}
-
-.card-header{
-padding:25px;
-border-bottom:1px solid #eee;
-text-align:center;
-}
-
-.card-header h1{
-font-size:34px;
-}
-
-.data-box{
-padding:30px;
 }
 
 .row{
-margin-bottom:18px;
 font-size:22px;
+margin-bottom:18px;
 }
 
 .label{
@@ -119,30 +91,19 @@ font-weight:bold;
 .status{
 color:#0066ff;
 font-weight:bold;
-};
-}
-
-.back-btn{
-width:100%;
-padding:15px;
-background:#4c8ee8;
-color:#fff;
-border:none;
-font-size:18px;
-cursor:pointer;
 }
 
 </style>
-
 </head>
 
-<body><div id="creator" class="creator">
+<body>
+<div id="creator" class="creator">
 
-<div class="form-box">
+<div class="box">
 
 <h2>إنشاء رابط التحقق</h2>
 
-<input id="request" placeholder="رقم الطلب (Document ID)">
+<input id="request" placeholder="رقم الطلب">
 
 <button onclick="generateLink()">
 إنشاء الرابط
@@ -160,17 +121,11 @@ cursor:pointer;
 
 </div>
 
-<div id="verify" class="container">
+<div id="viewer" class="viewer">
 
-<div class="card">
+<div class="box">
 
-<div class="card-header">
-
-<h1>التحقق من الوثيقة</h1>
-
-</div>
-
-<div class="data-box">
+<h2>التحقق من الوثيقة</h2>
 
 <div class="row"><span class="label">الغرفة:</span> <span id="v_room"></span></div>
 
@@ -192,15 +147,13 @@ cursor:pointer;
 
 <div class="row"><span class="label">السجل التجاري:</span> <span id="v_cr"></span></div>
 
-<div class="row"><span class="label">الحالة:</span> <span id="v_status" class="status"></span></div>
-
-<button class="back-btn" onclick="location.href=location.pathname">
-
-رجوع
-
-</button>
-
+<div class="row"><span class="label">الحالة:</span>
+<span id="v_status" class="status"></span>
 </div>
+
+<button onclick="location.href=location.pathname">
+رجوع
+</button>
 
 </div>
 
@@ -208,96 +161,105 @@ cursor:pointer;
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+getFirestore,
+doc,
+getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCwk455aMBlFYJWOmM8jtdpnweD11SiFzw",
-  authDomain: "verify-cd6c1.firebaseapp.com",
-  projectId: "verify-cd6c1",
-  storageBucket: "verify-cd6c1.firebasestorage.app",
-  messagingSenderId: "417325060071",
-  appId: "1:417325060071:web:54d0dc11c78defc659b742",
-  measurementId: "G-1G7QS4QKVS"
+apiKey:"AIzaSyCwk455aMBlFYJWOmM8jtdpnweD11SiFzw",
+authDomain:"verify-cd6c1.firebaseapp.com",
+projectId:"verify-cd6c1",
+storageBucket:"verify-cd6c1.firebasestorage.app",
+messagingSenderId:"417325060071",
+appId:"1:417325060071:web:54d0dc11c78defc659b742",
+measurementId:"G-1G7QS4QKVS"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.generateLink = function () {
+window.generateLink=function(){
 
-  const id = document.getElementById("request").value.trim();
+const id=document.getElementById("request").value.trim();
 
-  if (!id) {
-    alert("اكتب رقم الطلب");
-    return;
-  }
+if(id==""){
+alert("اكتب رقم الطلب");
+return;
+}
 
-  const url = location.origin + location.pathname + "?id=" + id;
+const url=location.origin+location.pathname+"?id="+id;
 
-  document.getElementById("resultLink").value = url;
+document.getElementById("resultLink").value=url;
 
-  const qr = document.getElementById("qrcode");
-  qr.innerHTML = "";
+const qr=document.getElementById("qrcode");
 
-  const canvas = document.createElement("canvas");
+qr.innerHTML="";
 
-  QRCode.toCanvas(canvas, url, {
-    width: 500,
-    margin: 1,
-    errorCorrectionLevel: "M"
-  });
+const canvas=document.createElement("canvas");
 
-  qr.appendChild(canvas);
+QRCode.toCanvas(canvas,url,{
+width:600,
+margin:1,
+errorCorrectionLevel:"M"
+});
+
+qr.appendChild(canvas);
 
 };
 
-window.openPage = function () {
+window.openPage=function(){
 
-  const link = document.getElementById("resultLink").value;
+const link=document.getElementById("resultLink").value;
 
-  if (id) {
+if(link==""){
+alert("أنشئ الرابط أولاً");
+return;
+}
 
-  document.getElementById("creator").style.display = "none";
-  document.getElementById("verify").style.display = "flex";
+window.open(link,"_self");
 
-  try {
+};
 
-    const snap = await getDoc(doc(db, "verify", id));
+const id=new URLSearchParams(location.search).get("id");
 
-    if (!snap.exists()) {
-      alert("الطلب غير موجود");
-    } else {
+if(id){
 
-      const d = snap.data();
+document.getElementById("creator").style.display="none";
+document.getElementById("viewer").style.display="flex";
 
-      document.getElementById("v_room").textContent = d.Room || "-";
-      document.getElementById("v_company").textContent = d.Company || "-";
-      document.getElementById("v_unified").textContent = d.unified || "-";
-      document.getElementById("v_request").textContent = d.request || id;
-      document.getElementById("v_type").textContent = d.type || "-";
-      document.getElementById("v_owner").textContent = d.owner || "-";
-      document.getElementById("v_create").textContent = d.create || "-";
-      document.getElementById("v_amount").textContent = d.amount || "-";
-      document.getElementById("v_expire").textContent = d.expire || "-";
-      document.getElementById("v_cr").textContent = d.cr || "-";
-      document.getElementById("v_status").textContent = d.status || "-";
+try{
 
-    }
+const snap=await getDoc(doc(db,"verify",id));
 
-  } catch (e) {
-    alert(e.message);
-    console.error(e);
-  }
+if(!snap.exists()){
+
+alert("الطلب غير موجود");
+
+}else{
+
+const d=snap.data();
+document.getElementById("v_room").textContent = d.Room || "-";
+document.getElementById("v_company").textContent = d.Company || "-";
+document.getElementById("v_unified").textContent = d.unified || "-";
+document.getElementById("v_request").textContent = d.request || id;
+document.getElementById("v_type").textContent = d.type || "-";
+document.getElementById("v_owner").textContent = d.owner || "-";
+document.getElementById("v_create").textContent = d.create || "-";
+document.getElementById("v_amount").textContent = d.amount || "-";
+document.getElementById("v_expire").textContent = d.expire || "-";
+document.getElementById("v_cr").textContent = d.cr || "-";
+document.getElementById("v_status").textContent = d.status || "-";
 
 }
 
-</script>
+}catch(e){
 
-</body>
-</html>
+alert("خطأ: " + e.message);
+console.error(e);
+
 }
-
-  }
 
 }
 
