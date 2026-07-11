@@ -209,7 +209,7 @@ if (id) {
 
   try {
 
-    const snap = await getDoc(doc(db, "verify", id));
+    const snap = await getDoc(doc(db, "requests", id));
 
     if (!snap.exists()) {
       alert("الطلب غير موجود");
