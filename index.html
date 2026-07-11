@@ -5,39 +5,39 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>التحقق من الوثيقة</title>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
 <style>
+
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:'Cairo',sans-serif;
+font-family:Cairo,sans-serif;
 }
+
 body{
-background:#f4f6f9;
-direction:rtl;
+background:#f5f7fb;
+padding:20px;
 }
-.creator,
-.viewer{
-display:flex;
-justify-content:center;
-padding:35px 15px;
-}
+
 .box{
-width:100%;
-max-width:760px;
+max-width:750px;
+margin:auto;
 background:#fff;
+padding:25px;
 border-radius:15px;
 box-shadow:0 5px 20px rgba(0,0,0,.08);
-padding:30px;
 }
-h2{
+
+h1{
 text-align:center;
 margin-bottom:25px;
 }
+
 input{
 width:100%;
 padding:14px;
@@ -46,71 +46,70 @@ border:1px solid #ddd;
 border-radius:8px;
 margin-bottom:15px;
 }
+
 button{
 width:100%;
 padding:15px;
 font-size:18px;
 background:#1976d2;
-color:white;
+color:#fff;
 border:none;
 border-radius:8px;
 cursor:pointer;
-margin-top:10px;
+margin-bottom:10px;
 }
-#resultLink{
-background:#f5f5f5;
+
+#result{
+background:#f2f2f2;
 }
+
 #qrcode{
 display:flex;
 justify-content:center;
 margin-top:20px;
 }
-.viewer{
+
+#viewer{
 display:none;
 }
+
 .row{
 font-size:22px;
-margin-bottom:18px;
+margin-bottom:16px;
 }
+
 .label{
 font-weight:bold;
 }
+
 .status{
 color:#0066ff;
 font-weight:bold;
 }
+
 </style>
+
 </head>
-<body>
-<div id="creator" class="creator">
 
-<div class="box">
+<body><div id="creator" class="box">
 
-<h2>إنشاء رابط التحقق</h2>
+<h1>إنشاء رابط التحقق</h1>
 
-<input id="request" placeholder="رقم الطلب">
+<input id="request" type="text" placeholder="اكتب رقم الطلب">
 
-<button onclick="generateLink()">
-إنشاء الرابط
-</button>
+<button id="btnCreate">إنشاء الرابط</button>
 
-<input id="resultLink" readonly>
+<input id="result" readonly placeholder="سيظهر الرابط هنا">
 
 <div id="qrcode"></div>
 
-<button onclick="openPage()">
-فتح صفحة التحقق
-</button>
+<button id="btnOpen">فتح صفحة التحقق</button>
 
 </div>
 
-</div>
+<div id="viewer" class="box">
 
-<div id="viewer" class="viewer">
-
-<div class="box">
-
-<h2>التحقق من الوثيقة</h2>
+<h1>التحقق من الوثيقة</h1>
 
 <div class="row"><span class="label">الغرفة:</span> <span id="v_room"></span></div>
 
@@ -132,110 +131,113 @@ font-weight:bold;
 
 <div class="row"><span class="label">السجل التجاري:</span> <span id="v_cr"></span></div>
 
-<div class="row"><span class="label">الحالة:</span>
-<span id="v_status" class="status"></span>
-</div>
+<div class="row"><span class="label">الحالة:</span> <span class="status" id="v_status"></span></div>
 
-<button onclick="location.href=location.pathname">
-رجوع
-</button>
+</div><script type="module">
 
-</div>
-
-</div>
-<script type="module">
-
-window.generateLink = function () {
-    alert("اشتغل");
-}
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
-apiKey:"AIzaSyCwk455aMBlFYJWOmM8jtdpnweD11SiFzw",
-authDomain:"verify-cd6c1.firebaseapp.com",
-projectId:"verify-cd6c1",
-storageBucket:"verify-cd6c1.firebasestorage.app",
-messagingSenderId:"417325060071",
-appId:"1:417325060071:web:54d0dc11c78defc659b742",
-measurementId:"G-1G7QS4QKVS"
+  apiKey: "AIzaSyCwk455aMBlFYJWOmM8jtdpnweD11SiFzw",
+  authDomain: "verify-cd6c1.firebaseapp.com",
+  projectId: "verify-cd6c1",
+  storageBucket: "verify-cd6c1.firebasestorage.app",
+  messagingSenderId: "417325060071",
+  appId: "1:417325060071:web:54d0dc11c78defc659b742"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.generateLink=function(){
+const request = document.getElementById("request");
+const result = document.getElementById("result");
+const qr = document.getElementById("qrcode");
 
-const id=document.getElementById("request").value.trim();
+document.getElementById("btnCreate").addEventListener("click", () => {
 
-if(id==""){
-alert("اكتب رقم الطلب");
-return;
-}
+  const id = request.value.trim();
 
-const url=location.origin+location.pathname+"?id="+id;
+  if (!id) {
+    alert("اكتب رقم الطلب");
+    return;
+  }
 
-document.getElementById("resultLink").value=url;
+  const url = location.origin + location.pathname + "?id=" + id;
 
-const qr=document.getElementById("qrcode");
+  result.value = url;
 
-qr.innerHTML="";
+  qr.innerHTML = "";
 
-const canvas=document.createElement("canvas");
+  QRCode.toCanvas(url, {
+    width: 220,
+    margin: 1
+  }, function (err, canvas) {
 
-QRCode.toCanvas(canvas,url,{
-width:600,
-margin:1,
-errorCorrectionLevel:"M"
+    if (err) {
+      console.error(err);
+      return;
+    }
+
+    qr.appendChild(canvas);
+
+  });
+
 });
 
-qr.appendChild(canvas);
+document.getElementById("btnOpen").addEventListener("click", () => {
 
-};
+  if (result.value === "") {
+    alert("أنشئ الرابط أولاً");
+    return;
+  }
 
-window.openPage=function(){
+  location.href = result.value;
 
-const link=document.getElementById("resultLink").value;
+});
 
-if(link==""){
-alert("أنشئ الرابط أولاً");
-return;
+const id = new URLSearchParams(location.search).get("id");
+
+if (id) {
+
+  document.getElementById("creator").style.display = "none";
+  document.getElementById("viewer").style.display = "block";
+
+  try {
+
+    const snap = await getDoc(doc(db, "verify", id));
+
+    if (!snap.exists()) {
+      alert("الطلب غير موجود");
+    } else {
+
+      const d = snap.data();
+document.getElementById("v_room").textContent = d.Room ?? "-";
+document.getElementById("v_company").textContent = d.Company ?? "-";
+document.getElementById("v_unified").textContent = d.unified ?? "-";
+document.getElementById("v_request").textContent = d.request ?? id;
+document.getElementById("v_type").textContent = d.type ?? "-";
+document.getElementById("v_owner").textContent = d.owner ?? "-";
+document.getElementById("v_create").textContent = d.create ?? "-";
+document.getElementById("v_amount").textContent = d.amount ?? "-";
+document.getElementById("v_expire").textContent = d.expire ?? "-";
+document.getElementById("v_cr").textContent = d.cr ?? "-";
+document.getElementById("v_status").textContent = d.status ?? "-";
+
+    }
+
+  } catch (e) {
+    console.error(e);
+    alert("خطأ: " + e.message);
+  }
+
 }
 
-window.open(link,"_self");
-
-};
-
-const id=new URLSearchParams(location.search).get("id");
-
-if(id){
-
-document.getElementById("creator").style.display="none";
-document.getElementById("viewer").style.display="flex";
-try{
-const snap=await getDoc(doc(db,"verify",id));
-
-if(!snap.exists()){
-
-alert("الطلب غير موجود");
-}else{
-const d=snap.data();
-document.getElementById("v_room").textContent = d.Room || "-";
-document.getElementById("v_company").textContent = d.Company || "-";
-document.getElementById("v_unified").textContent = d.unified || "-";
-document.getElementById("v_request").textContent = d.request || id;
-document.getElementById("v_type").textContent = d.type || "-";
-document.getElementById("v_owner").textContent = d.owner || "-";
-document.getElementById("v_create").textContent = d.create || "-";
-document.getElementById("v_amount").textContent = d.amount || "-";
-document.getElementById("v_expire").textContent = d.expire || "-";
-document.getElementById("v_cr").textContent = d.cr || "-";
-document.getElementById("v_status").textContent = d.status || "-";
-}
-}catch(e){
-
-alert("خطأ: " + e.message);
-console.error(e);
-}
-}
 </script>
+
 </body>
 </html>
