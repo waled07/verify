@@ -116,7 +116,7 @@ font-size:22px;
 font-weight:bold;
 }
 
-..status{
+.status{
 color:#0066ff;
 font-weight:bold;
 };
@@ -255,18 +255,7 @@ window.openPage = function () {
 
   const link = document.getElementById("resultLink").value;
 
-  if (!link) {
-    alert("أنشئ الرابط أولاً");
-    return;
-  }
-
-  window.open(link, "_blank");
-
-};
-
-const id = new URLSearchParams(location.search).get("id");
-
-if (id) {
+  if (id) {
 
   document.getElementById("creator").style.display = "none";
   document.getElementById("verify").style.display = "flex";
@@ -294,11 +283,18 @@ if (id) {
       document.getElementById("v_status").textContent = d.status || "-";
 
     }
-catch (e) {
 
+  } catch (e) {
     alert(e.message);
     console.error(e);
+  }
+
 }
+
+</script>
+
+</body>
+</html>
 }
 
   }
