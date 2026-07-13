@@ -138,10 +138,8 @@ font-weight:bold;
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
-  collection,
-  query,
-  where,
-  getDocs
+  doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const firebaseConfig = {
   apiKey: "AIzaSyCwk455aMBlFYJWOmM8jtdpnweD11SiFzw",
@@ -215,13 +213,13 @@ if (id) {
   where("request", "==", id)
 );
 
-const querySnapshot = await getDocs(q);
+const snap = await getDoc(doc(db, "requests", id));
 
-if (querySnapshot.empty) {
+if (!snap.exists()) {
   alert("الطلب غير موجود");
 } else {
 
-  const d = querySnapshot.docs[0].data();
+  const d = snap.data();
 document.getElementById("v_room").textContent = d.Room ?? "-";
 document.getElementById("v_company").textContent = d.Company ?? "-";
 document.getElementById("v_unified").textContent = d.unified ?? "-";
