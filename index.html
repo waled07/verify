@@ -208,11 +208,6 @@ if (id) {
 
   try {
 
-    const q = query(
-  collection(db, "requests"),
-  where("request", "==", id)
-);
-
 const snap = await getDoc(doc(db, "requests", id));
 
 if (!snap.exists()) {
